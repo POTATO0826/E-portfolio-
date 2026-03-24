@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(bun create:*)",
+      "Bash(bunx create-vite:*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(bun --version)",
+      "Bash(npm --version)",
+      "Bash(npm create:*)",
+      "Bash(bun run:*)"
+    ]
+  }
+}
