@@ -29,7 +29,7 @@ const hackathonProjects = [
     hoverGradient: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.14))',
   },
   {
-    hackathon: 'LotusHack 2025',
+    hackathon: 'LotusHack 2026',
     location: 'Vietnam 🇻🇳',
     name: 'SkyClaw',
     icon: '🛸',
