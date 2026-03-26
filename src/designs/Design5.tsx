@@ -11,6 +11,7 @@ const skills = [
   { name: 'TypeScript', icon: '🔷', desc: 'Type-safe JS' },
   { name: 'Python', icon: '🐍', desc: 'Data & scripts' },
   { name: 'AWS', icon: '☁️', desc: 'Cloud infra' },
+  { name: 'Git', icon: '🔀', desc: 'Version control' },
 ]
 
 const ticker = ['Flutter', 'React', 'TypeScript', 'Java', 'Firebase', 'Python', 'AWS', 'Dart', 'Computer Vision', 'Telegram Bots']
@@ -968,6 +969,7 @@ export default function Design5() {
               {[
                 { icon: '✉️', label: 'Email', href: 'mailto:loovincent268@gmail.com', val: 'Send a mail' },
                 { icon: '💼', label: 'LinkedIn', href: 'https://www.linkedin.com/in/vince-loo-82565a31b', val: 'Vince Loo' },
+                { icon: '📸', label: 'Instagram', href: 'https://www.instagram.com/vince__loo/', val: 'vince__loo' },
                 { icon: '🐙', label: 'GitHub', href: 'https://github.com/POTATO0826', val: 'POTATO0826' },
                 { icon: '💬', label: 'WhatsApp', href: 'https://wa.link/4ixpfx', val: 'Chat now' },
               ].map(c => (
