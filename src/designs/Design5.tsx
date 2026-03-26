@@ -859,31 +859,8 @@ export default function Design5() {
       <SpaceBackground />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-5 py-8 sm:py-12">
-        {/* Nav */}
-        <nav className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12 ${loaded ? 'fade-in-up' : 'opacity-0'}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm pulse-ring"
-              style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)' }}>
-              VL
-            </div>
-            <span className="font-semibold text-sm">Vince Loo</span>
-          </div>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <a href="https://www.linkedin.com/in/vince-loo-82565a31b" target="_blank" rel="noreferrer"
-              className="px-4 py-2 rounded-xl text-center text-xs font-medium text-zinc-400 hover:text-white transition-all duration-300 grad-card">
-              LinkedIn ↗
-            </a>
-            <a href="https://github.com/POTATO0826" target="_blank" rel="noreferrer"
-              className="px-4 py-2 rounded-xl text-center text-xs font-medium text-zinc-400 hover:text-white transition-all duration-300 grad-card">
-              GitHub ↗
-            </a>
-            <a href="mailto:loovincent268@gmail.com"
-              className="px-4 py-2 rounded-xl text-center text-xs font-medium text-white transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)' }}>
-              Contact
-            </a>
-          </div>
-        </nav>
+        {/* Spacer */}
+        <div className="mb-8 sm:mb-12" />
 
         {/* Bento Grid */}
         <div className={`grid gap-4 transition-all duration-700 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-4'}`}
