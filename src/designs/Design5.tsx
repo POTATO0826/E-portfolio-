@@ -58,14 +58,15 @@ function SpaceBackground() {
 
     // Stars
     const stars: { x: number; y: number; r: number; baseO: number; speed: number }[] = []
-    const STAR_COUNT = 220
+    const isMobile = window.innerWidth < 768
+    const STAR_COUNT = isMobile ? 100 : 220
 
     // Satellites (Starlink streaks)
     const satellites: {
       x: number; y: number; speed: number; angle: number
       length: number; brightness: number; size: number
     }[] = []
-    const SAT_COUNT = 10
+    const SAT_COUNT = isMobile ? 5 : 10
 
     // Shooting stars
     const shootingStars: {
@@ -80,11 +81,11 @@ function SpaceBackground() {
       size: number; rotation: number; rotSpeed: number; bobPhase: number
     }
     const spaceObjects: SpaceObj[] = []
-    const SPACE_OBJ_COUNT = 12
+    const SPACE_OBJ_COUNT = isMobile ? 6 : 12
 
     function resize() {
       w = canvas!.width = window.innerWidth
-      h = canvas!.height = Math.max(window.innerHeight, document.documentElement.scrollHeight)
+      h = canvas!.height = window.innerHeight
     }
 
     function init() {
