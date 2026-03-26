@@ -682,7 +682,7 @@ function ProfilePhoto() {
   return (
     <div className="relative group">
       <div className="absolute -inset-1 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-spin-slow"
-        style={{ background: 'conic-gradient(from 0deg, #818cf8, #f472b6, #38bdf8, #34d399, #818cf8)', padding: '3px' }}>
+        style={{ background: 'conic-gradient(from 0deg, #38bdf8, #818cf8, #f472b6, #fb923c, #38bdf8)', padding: '3px' }}>
         <div className="w-full h-full rounded-full bg-[#08080a]" />
       </div>
       <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden"
@@ -863,7 +863,7 @@ export default function Design5() {
         <nav className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12 ${loaded ? 'fade-in-up' : 'opacity-0'}`}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm pulse-ring"
-              style={{ background: 'linear-gradient(135deg, #818cf8, #f472b6)' }}>
+              style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)' }}>
               VL
             </div>
             <span className="font-semibold text-sm">Vince Loo</span>
@@ -879,7 +879,7 @@ export default function Design5() {
             </a>
             <a href="mailto:loovincent268@gmail.com"
               className="px-4 py-2 rounded-xl text-center text-xs font-medium text-white transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #818cf8, #f472b6)' }}>
+              style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)' }}>
               Contact
             </a>
           </div>
@@ -891,13 +891,13 @@ export default function Design5() {
 
           {/* Hero card */}
           <GradCard className="col-span-12 md:col-span-8 fade-in-up-d1"
-            gradient="linear-gradient(135deg, rgba(99,102,241,0.1), rgba(244,114,182,0.06), rgba(56,189,248,0.04))">
+            gradient="linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.06), rgba(251,146,60,0.04))">
             <div className="absolute top-0 left-8 right-8 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.5), rgba(244,114,182,0.3), transparent)' }} />
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(251,146,60,0.3), transparent)' }} />
             <div className="absolute -top-20 -right-20 w-52 h-52 rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #818cf8, transparent)' }} />
+              style={{ background: 'radial-gradient(circle, #38bdf8, transparent)' }} />
             <div className="absolute -bottom-16 -left-16 w-44 h-44 rounded-full opacity-15"
-              style={{ background: 'radial-gradient(circle, #f472b6, transparent)' }} />
+              style={{ background: 'radial-gradient(circle, #fb923c, transparent)' }} />
 
             <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="shrink-0"><ProfilePhoto /></div>
@@ -906,21 +906,20 @@ export default function Design5() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-xs text-zinc-500">Available for opportunities</span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-3 leading-[0.95] sm:leading-tight">
-                  Vince<br />
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3">
                   <span className="shimmer-text" style={{
-                    background: 'linear-gradient(135deg, #818cf8 0%, #c4b5fd 20%, #f472b6 40%, #38bdf8 60%, #34d399 80%, #818cf8 100%)',
+                    background: 'linear-gradient(90deg, #38bdf8 0%, #818cf8 25%, #f472b6 50%, #fb923c 75%, #38bdf8 100%)',
                     backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  }}>Loo</span>
+                  }}>Vince Loo</span>
                 </h1>
                 <p className="text-zinc-400 text-sm sm:text-[15px] max-w-md leading-relaxed mb-5">
                   Data Science & Software Development student at Taylor's University.
                   Building cross-platform apps and intelligent systems.
                 </p>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
-                  <Tag color="#818cf8">Data Science</Tag>
-                  <Tag color="#f472b6">Software Dev</Tag>
-                  <Tag color="#38bdf8">Malaysia 🇲🇾</Tag>
+                  <Tag color="#38bdf8">Data Science</Tag>
+                  <Tag color="#818cf8">Software Dev</Tag>
+                  <Tag color="#fb923c">Malaysia 🇲🇾</Tag>
                 </div>
               </div>
             </div>
