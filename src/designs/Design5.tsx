@@ -248,7 +248,10 @@ function PaperFlowBackground() {
     const uRes  = gl.getUniformLocation(prog, 'u_res')
     const uTime = gl.getUniformLocation(prog, 'u_time')
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    const isMobile = window.innerWidth <= 768
+    // Mobile: render the shader at a much lower internal resolution to keep scroll smooth.
+    // The browser upscales the canvas via CSS — the marbled flow hides the low-res sampling.
+    const dpr = isMobile ? 0.6 : Math.min(window.devicePixelRatio || 1, 1.5)
     function resize() {
       const w = window.innerWidth
       const h = window.innerHeight
@@ -263,12 +266,17 @@ function PaperFlowBackground() {
 
     let animId = 0
     const start = performance.now()
-    function frame() {
-      const t = (performance.now() - start) / 1000
+    // Throttle to ~30fps on mobile, full rAF on desktop.
+    const minFrameMs = isMobile ? 1000 / 30 : 0
+    let lastFrame = 0
+    function frame(now: number) {
+      animId = requestAnimationFrame(frame)
+      if (now - lastFrame < minFrameMs) return
+      lastFrame = now
+      const t = (now - start) / 1000
       gl!.uniform2f(uRes, canvas!.width, canvas!.height)
       gl!.uniform1f(uTime, t)
       gl!.drawArrays(gl!.TRIANGLES, 0, 6)
-      animId = requestAnimationFrame(frame)
     }
     animId = requestAnimationFrame(frame)
 
@@ -429,6 +437,7 @@ export default function Design5() {
             0 24px 60px -28px rgba(31,42,74,0.35),
             0 6px 24px -10px rgba(255,255,255,0.30);
           transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform;
         }
         .grad-card:hover {
           border-color: rgba(255,255,255,0.85);
@@ -438,6 +447,22 @@ export default function Design5() {
             0 32px 75px -25px rgba(31,42,74,0.45),
             0 8px 30px -10px rgba(255,255,255,0.40);
           transform: translateY(-2px);
+        }
+        /* Mobile: much lighter blur and no hover-lift to keep scrolling smooth */
+        @media (max-width: 768px) {
+          .grad-card {
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            box-shadow:
+              0 1px 0 rgba(255,255,255,0.8) inset,
+              0 10px 24px -14px rgba(31,42,74,0.30);
+            transition: none;
+          }
+          .grad-card:hover { transform: none; }
+        }
+        /* Respect users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          .grad-card, .grad-card:hover { transition: none; transform: none; }
         }
 
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
