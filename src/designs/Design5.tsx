@@ -142,7 +142,6 @@ function PaperFlowBackground() {
     // octaves) so the full-screen background doesn't fight with scrolling.
     const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const PRECISION = isMobile ? 'mediump' : 'highp'
     const OCTAVES = isMobile ? 4 : 6
 
     const vertSrc = `
@@ -151,7 +150,13 @@ function PaperFlowBackground() {
     `
 
     const fragSrc = `
-      precision ${PRECISION} float;
+      // The marble hash uses large constants — needs highp to stay color-accurate.
+      // mediump made phones go yellow, so use highp wherever the GPU supports it.
+      #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+      #else
+      precision mediump float;
+      #endif
       uniform vec2  u_res;
       uniform float u_time;
 
