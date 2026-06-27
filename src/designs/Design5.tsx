@@ -138,13 +138,20 @@ function PaperFlowBackground() {
     const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null
     if (!gl) return
 
+    // Device-aware quality. Phones get a lighter shader (mediump precision, fewer noise
+    // octaves) so the full-screen background doesn't fight with scrolling.
+    const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const PRECISION = isMobile ? 'mediump' : 'highp'
+    const OCTAVES = isMobile ? 4 : 6
+
     const vertSrc = `
       attribute vec2 a_pos;
       void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
     `
 
     const fragSrc = `
-      precision highp float;
+      precision ${PRECISION} float;
       uniform vec2  u_res;
       uniform float u_time;
 
@@ -163,7 +170,7 @@ function PaperFlowBackground() {
         float v = 0.0;
         float a = 0.5;
         mat2 rot = mat2(0.8, -0.6, 0.6, 0.8);
-        for (int i = 0; i < 6; i++){
+        for (int i = 0; i < ${OCTAVES}; i++){
           v += a * noise(p);
           p = rot * p * 2.05;
           a *= 0.5;
@@ -187,25 +194,35 @@ function PaperFlowBackground() {
         float bands = sin(f * 7.5 + t * 1.4 + r.x * 3.0) * 0.5 + 0.5;
         float ink   = smoothstep(0.32, 0.85, f);
 
-        // Suminagashi palette — warm cream paper with indigo + charcoal ink
+        // Low-frequency field that slowly drifts warm <-> cool zones across the paper
+        float warm = smoothstep(0.35, 0.65, fbm(uv * 0.6 + r * 0.6 + vec2(t * 0.25, -t * 0.15)));
+
+        // Suminagashi palette — warm cream paper marbled with teal, terracotta & gold (no purple)
         vec3 cPaper     = vec3(0.957, 0.929, 0.878);  // warm cream  #f4ede0
         vec3 cPaperShade= vec3(0.890, 0.855, 0.795);  // shadowed cream
-        vec3 cIndigo    = vec3(0.180, 0.220, 0.380);  // muted indigo
-        vec3 cInkDeep   = vec3(0.075, 0.090, 0.180);  // deep indigo/ink
-        vec3 cCharcoal  = vec3(0.040, 0.040, 0.050);  // near-black charcoal
-        vec3 cTerracotta= vec3(0.785, 0.290, 0.230);  // rare terracotta wisp
+        vec3 cTeal      = vec3(0.090, 0.300, 0.300);  // deep teal
+        vec3 cBlue      = vec3(0.070, 0.210, 0.350);  // deep ocean blue
+        vec3 cTerracotta= vec3(0.620, 0.250, 0.150);  // deep terracotta
+        vec3 cGold      = vec3(0.720, 0.510, 0.190);  // burnished gold
+        vec3 cInkCool   = vec3(0.030, 0.090, 0.120);  // very deep teal ink
+        vec3 cInkWarm   = vec3(0.120, 0.050, 0.035);  // very deep warm-brown ink
+        vec3 cCharcoal  = vec3(0.025, 0.025, 0.030);  // near-black charcoal
 
         vec3 col = cPaper;
         // Cream shadows where ink starts to gather
         col = mix(col, cPaperShade, smoothstep(0.25, 0.45, f) * 0.7);
-        // Indigo ink
-        col = mix(col, cIndigo,     smoothstep(0.40, 0.70, f));
-        // Deep ink in the core swirls
-        col = mix(col, cInkDeep,    smoothstep(0.62, 0.85, f));
+        // Mid tones — cool (teal/blue) or warm (terracotta/gold) depending on the warm field
+        vec3 midCool = mix(cTeal, cBlue, bands);
+        vec3 midWarm = mix(cTerracotta, cGold, bands);
+        vec3 mid     = mix(midCool, midWarm, warm);
+        col = mix(col, mid, smoothstep(0.40, 0.70, f) * 0.92);
+        // Deep ink in the core swirls (matches the zone's temperature)
+        vec3 deep = mix(cInkCool, cInkWarm, warm);
+        col = mix(col, deep, smoothstep(0.62, 0.86, f));
         // Charcoal in the densest folds
-        col = mix(col, cCharcoal,   smoothstep(0.80, 0.96, f) * 0.85);
-        // Sparse terracotta wisps along band edges
-        col = mix(col, cTerracotta, smoothstep(0.48, 0.62, f) * bands * 0.18);
+        col = mix(col, cCharcoal,   smoothstep(0.82, 0.96, f) * 0.75);
+        // Sparse gold wisps catching the light along warm band edges
+        col = mix(col, cGold,       smoothstep(0.48, 0.60, f) * bands * warm * 0.20);
 
         // Soft vignette toward shaded cream so edges feel like paper edges
         float d = length(uv);
@@ -264,10 +281,9 @@ function PaperFlowBackground() {
     const uRes  = gl.getUniformLocation(prog, 'u_res')
     const uTime = gl.getUniformLocation(prog, 'u_time')
 
-    const isMobile = window.innerWidth <= 768
     // Mobile: render the shader at a much lower internal resolution to keep scroll smooth.
     // The browser upscales the canvas via CSS — the marbled flow hides the low-res sampling.
-    const dpr = isMobile ? 0.6 : Math.min(window.devicePixelRatio || 1, 1.5)
+    const dpr = isMobile ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.5)
     function resize() {
       const w = window.innerWidth
       const h = window.innerHeight
@@ -280,25 +296,51 @@ function PaperFlowBackground() {
     resize()
     window.addEventListener('resize', resize)
 
+    function drawAt(t: number) {
+      gl!.uniform2f(uRes, canvas!.width, canvas!.height)
+      gl!.uniform1f(uTime, t)
+      gl!.drawArrays(gl!.TRIANGLES, 0, 6)
+    }
+
+    // Reduced-motion: paint one still frame and skip the animation loop entirely.
+    if (reduceMotion) {
+      window.removeEventListener('resize', resize)
+      const onResizeStatic = () => { resize(); drawAt(0) }
+      window.addEventListener('resize', onResizeStatic)
+      drawAt(0)
+      return () => window.removeEventListener('resize', onResizeStatic)
+    }
+
     let animId = 0
+    let paused = false
     const start = performance.now()
-    // Throttle to ~30fps on mobile, full rAF on desktop.
-    const minFrameMs = isMobile ? 1000 / 30 : 0
+    // Cap to ~24fps on mobile, full rAF on desktop.
+    const minFrameMs = isMobile ? 1000 / 24 : 0
     let lastFrame = 0
     function frame(now: number) {
       animId = requestAnimationFrame(frame)
       if (now - lastFrame < minFrameMs) return
       lastFrame = now
-      const t = (now - start) / 1000
-      gl!.uniform2f(uRes, canvas!.width, canvas!.height)
-      gl!.uniform1f(uTime, t)
-      gl!.drawArrays(gl!.TRIANGLES, 0, 6)
+      drawAt((now - start) / 1000)
     }
     animId = requestAnimationFrame(frame)
+
+    // Stop rendering while the tab/app is backgrounded — saves battery and CPU on phones.
+    function onVisibility() {
+      if (document.hidden) {
+        if (!paused) { cancelAnimationFrame(animId); paused = true }
+      } else if (paused) {
+        paused = false
+        lastFrame = 0
+        animId = requestAnimationFrame(frame)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
@@ -351,13 +393,13 @@ function Tag({ children, color = '#3f3f46' }: { children: React.ReactNode; color
 function GithubLink({ href, accent }: { href: string; accent: string }) {
   return (
     <a href={href} target="_blank" rel="noreferrer"
-      className="github-link inline-flex items-center gap-2 text-sm font-medium text-zinc-700 transition-colors duration-300"
+      className="github-link group/gh inline-flex items-center gap-2 text-sm font-medium text-zinc-700 transition-colors duration-300"
       style={{ ['--accent' as string]: accent }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
       </svg>
       View on GitHub
-      <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+      <span className="transition-transform duration-300 group-hover/gh:translate-x-1">→</span>
     </a>
   )
 }
@@ -494,7 +536,7 @@ export default function Design5() {
         }
         .pulse-ring { animation: pulse-ring 2s ease-out infinite; }
 
-        /* Editorial GitHub link picks up the project accent on hover */
+        /* Editorial GitHub link — picks up the project accent on hover */
         .github-link:hover { color: var(--accent); }
         .project-entry:hover { background: linear-gradient(90deg, rgba(255,255,255,0.18), transparent 70%); }
 
