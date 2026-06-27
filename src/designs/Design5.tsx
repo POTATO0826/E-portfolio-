@@ -31,6 +31,7 @@ type Project = {
   accent: string
   gradient: string
   hoverGradient: string
+  award?: string
 }
 
 const INDIGO_GRAD = {
@@ -45,10 +46,25 @@ const SAGE_GRAD = {
   gradient: 'linear-gradient(135deg, rgba(90,107,74,0.10), rgba(31,42,74,0.06))',
   hoverGradient: 'linear-gradient(135deg, rgba(90,107,74,0.18), rgba(31,42,74,0.10))',
 }
+const GOLD_GRAD = {
+  gradient: 'linear-gradient(135deg, rgba(200,155,60,0.14), rgba(31,42,74,0.06))',
+  hoverGradient: 'linear-gradient(135deg, rgba(200,155,60,0.22), rgba(31,42,74,0.10))',
+}
 
 const hackathonProjects: Project[] = [
   {
-    meta: 'KitaHack 2025 · Malaysia 🇲🇾',
+    meta: 'ImagineHack 2026 · Malaysia 🇲🇾',
+    name: 'MEETU',
+    icon: '🤝',
+    desc: 'An AI-powered CRM built for independent financial advisors. It ingests WhatsApp conversations and news, then automatically extracts the signals that matter — life events, follow-ups, and per-client talking points — and surfaces them in a calm, editorial workspace. The goal: advisors stop losing clients simply because a thread slipped through the cracks.',
+    tech: ['Next.js', 'React', 'Convex', 'AI SDK'],
+    github: 'https://github.com/POTATO0826/MEETU',
+    accent: '#c89b3c',
+    award: '🏆 Champion · Track 1 (AAG × ASG)',
+    ...GOLD_GRAD,
+  },
+  {
+    meta: 'KitaHack 2026 · Malaysia 🇲🇾',
     name: 'ProjekWatch',
     icon: '🏠',
     desc: 'A community-driven platform that tracks the real progress of infrastructure projects such as housing, roads, and public facilities. Users upload photos and updates to verify construction activity, helping improve transparency and accountability in public development.',
@@ -70,7 +86,7 @@ const hackathonProjects: Project[] = [
   {
     meta: 'MyHack 2026 · Malaysia 🇲🇾',
     name: 'BloomPost',
-    icon: '🌸',
+    icon: '🎬',
     desc: 'A marketing platform that generates product imagery with Google Gemini and short-form videos with Google Veo, then auto-posts them across social media and e-commerce channels — helping brands scale their content output and boost product visibility.',
     tech: ['Gemini', 'Google Veo', 'Social APIs', 'Next.js'],
     github: 'https://github.com/POTATO0826/BloomPost',
@@ -101,12 +117,12 @@ const sideProjects: Project[] = [
     ...INDIGO_GRAD,
   },
   {
-    meta: 'Side Project · In Progress',
-    name: 'ROJAKGOV',
-    icon: '🏛️',
-    desc: 'A unified app concept that bundles Malaysian government services into one interface — making everyday public-sector tasks easier to find and complete. Still in active development.',
-    tech: ['Flutter', 'Dart'],
-    github: 'https://github.com/POTATO0826/ROJAKGOV',
+    meta: 'Side Project · 3D Web',
+    name: 'Sakura',
+    icon: '🌸',
+    desc: 'An interactive 3D web experience — and installable PWA — where a cherry blossom blooms in a moonlit garden. Snow and petals fall, a glowing seed descends, a branch grows and unfurls, and five petals open into a luminous flower. Drag to orbit the camera or tap the blossom for a burst of heart particles, all set to an optional lofi soundtrack. Every visual is procedurally generated — no pre-made models or images.',
+    tech: ['Three.js', 'TypeScript', 'GSAP', 'PWA'],
+    github: 'https://github.com/POTATO0826/Flower-',
     accent: '#c84a3b',
     ...TERRA_GRAD,
   },
@@ -323,30 +339,6 @@ function Ticker() {
   )
 }
 
-/* ── Gradient Card ───────────────────────────────────── */
-function GradCard({ children, className = '', gradient, hoverGradient, accentColor }: {
-  children: React.ReactNode; className?: string
-  gradient?: string; hoverGradient?: string; accentColor?: string
-}) {
-  const [hovered, setHovered] = useState(false)
-  const tint = hovered && hoverGradient ? hoverGradient : gradient
-  // Soft cloud: light translucent white base that picks up the marble colors through blur.
-  const cloudBase = 'rgba(255,255,255,0.32)'
-  return (
-    <div
-      className={`grad-card rounded-[28px] p-5 sm:p-6 relative overflow-hidden ${className}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: tint ? `${tint}, ${cloudBase}` : cloudBase,
-        borderColor: hovered && accentColor ? accentColor + '70' : undefined,
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
 function Tag({ children, color = '#3f3f46' }: { children: React.ReactNode; color?: string }) {
   return (
     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
@@ -356,53 +348,74 @@ function Tag({ children, color = '#3f3f46' }: { children: React.ReactNode; color
   )
 }
 
-function GithubButton({ href }: { href: string }) {
+function GithubLink({ href, accent }: { href: string; accent: string }) {
   return (
     <a href={href} target="_blank" rel="noreferrer"
-      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold text-zinc-900 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-zinc-900/20"
-      style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(0,0,0,0.12)' }}>
+      className="github-link inline-flex items-center gap-2 text-sm font-medium text-zinc-700 transition-colors duration-300"
+      style={{ ['--accent' as string]: accent }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
       </svg>
       View on GitHub
+      <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
     </a>
   )
 }
 
-/* ── Project Card ────────────────────────────────────── */
-function ProjectCard({ project }: { project: Project }) {
+/* ── Editorial Project Entry ──────────────────────────── */
+function ProjectEntry({ project, index }: { project: Project; index: number }) {
   return (
-    <div className="col-span-12 md:col-span-6 group">
-      <GradCard
-        className="h-full transition-all duration-500 group-hover:scale-[1.02]"
-        gradient={project.gradient}
-        hoverGradient={project.hoverGradient}
-        accentColor={project.accent}
-      >
-        {/* Corner glow */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ background: `radial-gradient(circle, ${project.accent}20, transparent)` }} />
+    <article
+      className="project-entry group relative border-t border-zinc-900/15 py-8 sm:py-9"
+      style={{ ['--accent' as string]: project.accent }}
+    >
+      {/* accent rule that grows on hover */}
+      <span className="absolute -top-px left-0 h-px w-0 group-hover:w-full transition-all duration-500"
+        style={{ background: project.accent }} />
 
-        <div className="relative z-10">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                style={{ background: `${project.accent}15`, border: `1px solid ${project.accent}25` }}>
-                {project.icon}
-              </div>
-              <div>
-                <p className="text-xs text-zinc-500 font-medium">{project.meta}</p>
-                <h3 className="display-serif text-2xl text-zinc-900 leading-tight">{project.name}</h3>
-              </div>
+      <div className="grid grid-cols-12 gap-x-5 gap-y-3">
+        {/* index */}
+        <div className="col-span-12 sm:col-span-1">
+          <span className="font-mono text-sm text-zinc-500 group-hover:text-[var(--accent)] transition-colors duration-300">
+            {String(index).padStart(2, '0')}
+          </span>
+        </div>
+
+        {/* title + description */}
+        <div className="col-span-12 sm:col-span-7">
+          <p className="text-xs font-medium text-zinc-500 mb-1.5">{project.meta}</p>
+          <h3 className="display-serif text-3xl sm:text-4xl text-zinc-900 leading-tight mb-3 flex items-center gap-3">
+            <span className="text-2xl transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">{project.icon}</span>
+            <span>{project.name}</span>
+          </h3>
+          {project.award && (
+            <div className="award-badge inline-flex items-center gap-1.5 mb-3 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ color: '#7a5c1e', background: 'rgba(200,155,60,0.16)', border: '1px solid rgba(200,155,60,0.5)' }}>
+              {project.award}
             </div>
-          </div>
-          <p className="text-zinc-700 text-sm leading-relaxed mb-5">{project.desc}</p>
-          <div className="flex flex-wrap gap-2 mb-5">
+          )}
+          <p className="text-zinc-700 text-sm sm:text-[15px] leading-relaxed max-w-xl">{project.desc}</p>
+        </div>
+
+        {/* tech + link */}
+        <div className="col-span-12 sm:col-span-4 flex flex-col gap-4 sm:items-end">
+          <div className="flex flex-wrap gap-2 sm:justify-end">
             {project.tech.map(t => <Tag key={t} color={project.accent}>{t}</Tag>)}
           </div>
-          <GithubButton href={project.github} />
+          <GithubLink href={project.github} accent={project.accent} />
         </div>
-      </GradCard>
+      </div>
+    </article>
+  )
+}
+
+/* ── Editorial Section Header ─────────────────────────── */
+function SectionHeader({ title, count }: { title: string; count: string }) {
+  return (
+    <div className="flex items-baseline gap-4 mt-16 mb-2">
+      <h2 className="display-serif-i text-3xl sm:text-4xl text-zinc-900 leading-none">{title}</h2>
+      <div className="flex-1 h-px bg-zinc-900/25" />
+      <span className="text-xs font-mono text-zinc-600 tracking-widest">{count}</span>
     </div>
   )
 }
@@ -480,159 +493,110 @@ export default function Design5() {
           100% { box-shadow: 0 0 0 0 rgba(31,42,74,0); }
         }
         .pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+
+        /* Editorial GitHub link picks up the project accent on hover */
+        .github-link:hover { color: var(--accent); }
+        .project-entry:hover { background: linear-gradient(90deg, rgba(255,255,255,0.18), transparent 70%); }
+
+        /* Champion badge — soft golden glow pulse */
+        @keyframes award-glow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(200,155,60,0.0); }
+          50%      { box-shadow: 0 0 14px 1px rgba(200,155,60,0.45); }
+        }
+        .award-badge { animation: award-glow 2.8s ease-in-out infinite; }
       `}</style>
 
       <PaperFlowBackground />
+      {/* Cream wash — mutes the water shader into a quiet paper texture so dark text stays readable everywhere */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'rgba(244,237,224,0.55)' }} />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-5 py-8 sm:py-12">
-        {/* Spacer */}
-        <div className="mb-8 sm:mb-12" />
+      <div className={`relative z-10 max-w-4xl mx-auto px-5 sm:px-8 py-12 sm:py-16 transition-all duration-700 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
 
-        {/* Bento Grid */}
-        <div className={`grid gap-4 transition-all duration-700 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-4'}`}
-          style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
-
-          {/* Hero card */}
-          <GradCard className="col-span-12 md:col-span-8 fade-in-up-d1"
-            gradient="linear-gradient(135deg, rgba(31,42,74,0.10), rgba(200,74,59,0.06), rgba(10,10,20,0.04))">
-            <div className="absolute top-0 left-8 right-8 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(31,42,74,0.5), rgba(200,74,59,0.3), transparent)' }} />
-            <div className="absolute -top-20 -right-20 w-52 h-52 rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #1f2a4a, transparent)' }} />
-            <div className="absolute -bottom-16 -left-16 w-44 h-44 rounded-full opacity-15"
-              style={{ background: 'radial-gradient(circle, #c84a3b, transparent)' }} />
-
-            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <div className="shrink-0"><ProfilePhoto /></div>
-              <div className="text-center sm:text-left flex-1">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-[#5a6b4a] animate-pulse" />
-                  <span className="text-xs text-zinc-500">Available for opportunities</span>
-                </div>
-                <h1 className="display-serif text-5xl sm:text-6xl md:text-7xl mb-3 text-zinc-900 leading-none">
-                  Vince <span className="display-serif-i">Loo</span>
-                </h1>
-                <p className="text-zinc-700 text-sm sm:text-[15px] max-w-md leading-relaxed mb-5">
-                  Data Science & Software Development student at Taylor's University.
-                  Building cross-platform apps and intelligent systems.
-                </p>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
-                  <Tag color="#1f2a4a">Data Science</Tag>
-                  <Tag color="#c84a3b">Software Dev</Tag>
-                  <Tag color="#0a0a14">Malaysia 🇲🇾</Tag>
-                </div>
-              </div>
+        {/* ── Hero ─────────────────────────────────── */}
+        <header className="fade-in-up-d1 flex flex-col sm:flex-row items-center sm:items-start gap-7 pb-10 border-b border-zinc-900/15">
+          <div className="shrink-0"><ProfilePhoto /></div>
+          <div className="text-center sm:text-left flex-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#5a6b4a] animate-pulse" />
+              <span className="text-xs text-zinc-500">Available for opportunities</span>
             </div>
-          </GradCard>
-
-          {/* University card */}
-          <GradCard className="col-span-12 md:col-span-4 flex flex-col justify-between fade-in-up-d2"
-            gradient="linear-gradient(135deg, rgba(90,107,74,0.10), rgba(31,42,74,0.06))">
-            <div className="absolute top-0 left-6 right-6 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(90,107,74,0.55), transparent)' }} />
-            <div>
-              <div className="text-3xl mb-4 animate-float">🎓</div>
-              <h3 className="display-serif text-2xl text-zinc-900 mb-2 leading-tight">Taylor's University</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">Malaysia · Data Science & Software Engineering</p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-zinc-900/10">
-              <div className="flex items-center justify-between text-xs text-zinc-500">
-                <span>2 Hackathons</span>
-                <span className="text-[#5a6b4a] font-medium">Active</span>
-              </div>
-            </div>
-          </GradCard>
-
-          {/* Section label */}
-          <div className="col-span-12 mt-4 fade-in-up-d3">
-            <div className="flex items-baseline gap-4">
-              <h2 className="display-serif-i text-3xl sm:text-4xl text-zinc-900 leading-none">Hackathon Projects</h2>
-              <div className="flex-1 h-px bg-zinc-900/25" />
-              <span className="text-xs font-mono text-zinc-600 tracking-widest">04</span>
+            <h1 className="display-serif text-6xl sm:text-7xl md:text-8xl mb-4 text-zinc-900 leading-none">
+              Vince <span className="display-serif-i">Loo</span>
+            </h1>
+            <p className="text-zinc-700 text-sm sm:text-base max-w-lg leading-relaxed mb-5">
+              Data Science & Software Development student at Taylor's University, Malaysia.
+              Building cross-platform apps and intelligent systems.
+            </p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
+              <Tag color="#1f2a4a">Data Science</Tag>
+              <Tag color="#c84a3b">Software Dev</Tag>
+              <Tag color="#5a6b4a">🎓 Taylor's University</Tag>
+              <Tag color="#0a0a14">Malaysia 🇲🇾</Tag>
             </div>
           </div>
+        </header>
 
-          {/* Project cards */}
-          {hackathonProjects.map((project) => (
-            <ProjectCard key={project.name} project={project} />
+        {/* ── Hackathon Projects ───────────────────── */}
+        <section className="fade-in-up-d2">
+          <SectionHeader title="Hackathon Projects" count={String(hackathonProjects.length).padStart(2, '0')} />
+          {hackathonProjects.map((project, i) => (
+            <ProjectEntry key={project.name} project={project} index={i + 1} />
           ))}
+        </section>
 
-          {/* Side Projects label */}
-          <div className="col-span-12 mt-6">
-            <div className="flex items-baseline gap-4">
-              <h2 className="display-serif-i text-3xl sm:text-4xl text-zinc-900 leading-none">Side Projects</h2>
-              <div className="flex-1 h-px bg-zinc-900/25" />
-              <span className="text-xs font-mono text-zinc-600 tracking-widest">02</span>
-            </div>
-          </div>
-
-          {/* Side project cards */}
-          {sideProjects.map((project) => (
-            <ProjectCard key={project.name} project={project} />
+        {/* ── Side Projects ────────────────────────── */}
+        <section>
+          <SectionHeader title="Side Projects" count={String(sideProjects.length).padStart(2, '0')} />
+          {sideProjects.map((project, i) => (
+            <ProjectEntry key={project.name} project={project} index={i + 1} />
           ))}
+        </section>
 
-          {/* Skills ticker */}
-          <GradCard className="col-span-12 !p-4"
-            gradient="linear-gradient(90deg, rgba(31,42,74,0.06), rgba(200,74,59,0.05), rgba(10,10,20,0.05))">
+        {/* ── Tech Stack ───────────────────────────── */}
+        <section>
+          <SectionHeader title="Tech Stack" count="13" />
+          <div className="mt-6 mb-8 -mx-1">
             <Ticker />
-          </GradCard>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-x-4 gap-y-6">
+            {skills.map((s, i) => (
+              <div key={i}
+                className="group flex flex-col items-center gap-2 text-center cursor-default">
+                <img
+                  src={s.icon}
+                  alt={s.name}
+                  loading="lazy"
+                  className="w-8 h-8 object-contain transition-transform duration-300 group-hover:scale-125 group-hover:-translate-y-1"
+                />
+                <span className="font-medium text-sm text-zinc-900">{s.name}</span>
+                <span className="text-xs text-zinc-500 leading-tight">{s.desc}</span>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          {/* Skills grid */}
-          <GradCard className="col-span-12 md:col-span-8"
-            gradient="linear-gradient(135deg, rgba(31,42,74,0.08), rgba(200,74,59,0.05), rgba(10,10,20,0.04))">
-            <div className="absolute top-0 left-6 right-6 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(31,42,74,0.45), rgba(200,74,59,0.3), transparent)' }} />
-            <div className="flex items-baseline gap-3 mb-5">
-              <h3 className="display-serif-i text-2xl sm:text-3xl text-zinc-900 leading-none">Tech Stack</h3>
-              <div className="flex-1 h-px bg-zinc-900/20" />
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {skills.map((s, i) => (
-                <div key={i}
-                  className="group flex flex-col items-center gap-2 p-3 rounded-xl cursor-default transition-all duration-300 hover:bg-white/40 hover:scale-105">
-                  <img
-                    src={s.icon}
-                    alt={s.name}
-                    loading="lazy"
-                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <span className="font-medium text-sm">{s.name}</span>
-                  <span className="text-xs text-zinc-500">{s.desc}</span>
-                </div>
-              ))}
-            </div>
-          </GradCard>
-
-          {/* Contact card */}
-          <GradCard className="col-span-12 md:col-span-4"
-            gradient="linear-gradient(135deg, rgba(200,74,59,0.10), rgba(31,42,74,0.06))">
-            <div className="absolute top-0 left-6 right-6 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(200,74,59,0.5), rgba(31,42,74,0.3), transparent)' }} />
-            <div className="mb-5">
-              <h3 className="display-serif-i text-3xl text-zinc-900 mb-3 leading-none">Let's build something</h3>
-              <p className="text-zinc-500 text-sm mb-6">Open to collabs, hackathons, and cool ideas.</p>
-            </div>
-            <div className="space-y-3">
-              {[
-                { icon: 'https://cdn.simpleicons.org/gmail',     label: 'Email',     href: 'mailto:loovincent268@gmail.com',                       val: 'Send a mail' },
-                { icon: `${DEVICON}/linkedin/linkedin-original.svg`,  label: 'LinkedIn',  href: 'https://www.linkedin.com/in/vince-loo-82565a31b',     val: 'Vince Loo' },
-                { icon: 'https://cdn.simpleicons.org/instagram', label: 'Instagram', href: 'https://www.instagram.com/vince__loo/',                val: 'vince__loo' },
-                { icon: 'https://cdn.simpleicons.org/github/1f2a4a', label: 'GitHub', href: 'https://github.com/POTATO0826',                       val: 'POTATO0826' },
-                { icon: 'https://cdn.simpleicons.org/whatsapp',  label: 'WhatsApp',  href: 'https://wa.link/4ixpfx',                               val: 'Chat now' },
-              ].map(c => (
-                <a key={c.label} href={c.href} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-3 py-2 group transition-all duration-300 hover:translate-x-1">
-                  <img src={c.icon} alt={c.label} loading="lazy" className="w-5 h-5 object-contain shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs text-zinc-500">{c.label}</div>
-                    <div className="text-sm font-medium truncate">{c.val}</div>
-                  </div>
-                  <span className="text-zinc-500 group-hover:text-zinc-900 transition-colors">→</span>
-                </a>
-              ))}
-            </div>
-          </GradCard>
-        </div>
+        {/* ── Contact ──────────────────────────────── */}
+        <section>
+          <SectionHeader title="Let's build something" count="05" />
+          <p className="text-zinc-500 text-sm mt-4 mb-6">Open to collabs, hackathons, and cool ideas.</p>
+          <div className="border-t border-zinc-900/15">
+            {[
+              { icon: 'https://cdn.simpleicons.org/gmail',     label: 'Email',     href: 'mailto:loovincent268@gmail.com',                   val: 'loovincent268@gmail.com' },
+              { icon: `${DEVICON}/linkedin/linkedin-original.svg`, label: 'LinkedIn', href: 'https://www.linkedin.com/in/vince-loo-82565a31b', val: 'Vince Loo' },
+              { icon: 'https://cdn.simpleicons.org/instagram', label: 'Instagram', href: 'https://www.instagram.com/vince__loo/',            val: 'vince__loo' },
+              { icon: 'https://cdn.simpleicons.org/github/1f2a4a', label: 'GitHub', href: 'https://github.com/POTATO0826',                   val: 'POTATO0826' },
+              { icon: 'https://cdn.simpleicons.org/whatsapp',  label: 'WhatsApp',  href: 'https://wa.link/4ixpfx',                           val: 'Chat now' },
+            ].map(c => (
+              <a key={c.label} href={c.href} target="_blank" rel="noreferrer"
+                className="flex items-center gap-4 py-4 border-b border-zinc-900/15 group transition-all duration-300 hover:px-2">
+                <img src={c.icon} alt={c.label} loading="lazy" className="w-5 h-5 object-contain shrink-0" />
+                <div className="w-24 shrink-0 text-xs uppercase tracking-wider text-zinc-500">{c.label}</div>
+                <div className="flex-1 min-w-0 text-sm font-medium text-zinc-900 truncate">{c.val}</div>
+                <span className="text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-1 transition-all">→</span>
+              </a>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   )

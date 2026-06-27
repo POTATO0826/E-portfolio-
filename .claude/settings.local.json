@@ -9,7 +9,9 @@
       "Bash(bun --version)",
       "Bash(npm --version)",
       "Bash(npm create:*)",
-      "Bash(bun run:*)"
+      "Bash(bun run:*)",
+      "Bash(netstat -ano)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }
