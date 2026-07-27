@@ -53,6 +53,17 @@ const GOLD_GRAD = {
 
 const hackathonProjects: Project[] = [
   {
+    meta: 'IIMS Hackathon 2026 · Nepal 🇳🇵',
+    name: 'Finchpoint',
+    icon: '🐔',
+    desc: 'An AI that watches your chickens so you don\'t have to. Coop cameras count the flock and flag anyone acting off, then every morning Finch drops a coop check-up straight into WhatsApp or Telegram — who to check on first, how warm they are, plus a snapshot as proof. Ask it anything about your flock and it actually knows your farm, not just chicken facts.',
+    tech: ['Computer Vision', 'Convex', 'WhatsApp Bot', 'React'],
+    github: 'https://github.com/POTATO0826/IIMS-Hackathon',
+    accent: '#c89b3c',
+    award: '🏆 Champion · Open Track',
+    ...GOLD_GRAD,
+  },
+  {
     meta: 'ImagineHack 2026 · Malaysia 🇲🇾',
     name: 'MEETU',
     icon: '🤝',
@@ -352,6 +363,540 @@ function PaperFlowBackground() {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 }
 
+/* ── Koi Pond ─────────────────────────────────────────
+   Ink-wash koi drifting beneath the paper. Every fish is drawn procedurally —
+   a swimming spine, a tapered body, sway-driven fins, and clipped colour
+   patches — then multiplied onto the cream wash so it reads as pigment in the
+   page rather than a sprite sitting on top of it.
+
+   Three things make it feel alive rather than looped:
+     · depth — each koi drifts between deep (small, faint, blurred) and surfaced
+       (large, crisp), so the shoal never sits on one flat plane
+     · avoidance — koi bank away from the cursor the way real fish do
+     · ripples — click or tap to drop a ring; nearby koi startle and scatter,
+       and surfaced koi leave their own dimples as they pass                   */
+
+type Blob = { ds: number; dlat: number; r: number }
+type Patch = { s: number; lat: number; r: number; blobs: Blob[] }
+type Koi = {
+  x: number; y: number; h: number
+  speed: number; len: number
+  z: number; zTarget: number
+  phase: number; waveSpeed: number
+  seed: number; startle: number
+  body: string; patch: string; fin: string
+  patches: Patch[]
+}
+type Ripple = { x: number; y: number; r0: number; max: number; age: number; life: number; w: number }
+type Bubble = { x: number; y: number; r: number; vx: number; vy: number; age: number; life: number }
+
+const TAU = Math.PI * 2
+
+// Kohaku only — pearl-white bodies with red or orange hi. The four entries are
+// the same two fish at slightly different hi shades, so a shoal never looks
+// stamped from one template. Bodies sit just under the paper tone so the
+// silhouette still reads after multiply blending.
+const KOI_VARIETIES = [
+  { body: '#ece5d6', patch: '#d4472a', fin: 'rgba(198,186,166,0.40)' },  // red & white
+  { body: '#ebe4d5', patch: '#e0763a', fin: 'rgba(196,184,164,0.40)' },  // orange & white
+  { body: '#e9e2d3', patch: '#c23f26', fin: 'rgba(194,182,162,0.40)' },  // deeper red & white
+  { body: '#ece6d8', patch: '#e88b41', fin: 'rgba(198,188,168,0.40)' },  // lighter orange & white
+]
+
+// Blunt rounded nose, widest just behind the head, tapering to a narrow
+// peduncle where the tail attaches — the top-down koi silhouette.
+function bodyWidth(s: number) {
+  if (s < 0.22) {
+    const u = (0.22 - s) / 0.22
+    return Math.sqrt(Math.max(0, 1 - u * u))
+  }
+  return Math.pow(1 - (s - 0.22) / 0.78, 0.9) * 0.84 + 0.16
+}
+
+function wrapAngle(a: number) {
+  while (a > Math.PI) a -= TAU
+  while (a < -Math.PI) a += TAU
+  return a
+}
+
+function KoiPond() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const COUNT = isMobile ? 3 : 5
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)
+
+    let W = window.innerWidth
+    let H = window.innerHeight
+
+    function resize() {
+      W = window.innerWidth
+      H = window.innerHeight
+      canvas!.width = Math.floor(W * dpr)
+      canvas!.height = Math.floor(H * dpr)
+      canvas!.style.width = W + 'px'
+      canvas!.style.height = H + 'px'
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    resize()
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a)
+
+    function makeKoi(i: number): Koi {
+      const v = KOI_VARIETIES[i % KOI_VARIETIES.length]
+      const z = rand(0.15, 1)
+      return {
+        x: rand(0.1, 0.9) * W,
+        y: rand(0.1, 0.9) * H,
+        h: rand(0, TAU),
+        speed: rand(11, 24),
+        len: rand(95, 165) * (isMobile ? 0.72 : 1),
+        z, zTarget: rand(0.15, 1),
+        phase: rand(0, TAU),
+        waveSpeed: rand(4.6, 6.4),
+        seed: rand(0, 100),
+        startle: 0,
+        ...v,
+        // 2–4 asymmetric markings pinned to body coordinates so they swim with the
+        // fish. Each is a cluster of overlapping blobs — real koi markings have
+        // ragged organic edges, never clean ellipses.
+        patches: Array.from({ length: Math.round(rand(2, 4)) }, () => ({
+          s: rand(0.08, 0.72),
+          lat: rand(-0.4, 0.4),
+          r: rand(0.07, 0.15),
+          blobs: Array.from({ length: 3 }, () => ({
+            ds: rand(-0.07, 0.07),
+            dlat: rand(-0.55, 0.55),
+            r: rand(0.6, 1.15),
+          })),
+        })),
+      }
+    }
+
+    const koi: Koi[] = Array.from({ length: COUNT }, (_, i) => makeKoi(i))
+    const ripples: Ripple[] = []
+    const bubbles: Bubble[] = []
+
+    let pointerX = -9999
+    let pointerY = -9999
+
+    function drawKoi(k: Koi) {
+      const scale = 0.55 + k.z * 0.6
+      const L = k.len * scale
+      const maxW = L * 0.19
+      const N = 18
+
+      // Spine — a travelling sine wave that whips harder toward the tail
+      const pts: number[][] = []
+      for (let i = 0; i < N; i++) {
+        const s = i / (N - 1)
+        const wave = Math.sin(k.phase - s * 3.4) * L * 0.055 * (0.25 + s * s * 1.5)
+        const bx = k.x - Math.cos(k.h) * s * L
+        const by = k.y - Math.sin(k.h) * s * L
+        pts.push([bx - Math.sin(k.h) * wave, by + Math.cos(k.h) * wave, s])
+      }
+
+      // Outline from per-point normals
+      const left: number[][] = []
+      const right: number[][] = []
+      for (let i = 0; i < N; i++) {
+        const a = pts[Math.max(0, i - 1)]
+        const b = pts[Math.min(N - 1, i + 1)]
+        let tx = b[0] - a[0]
+        let ty = b[1] - a[1]
+        const m = Math.hypot(tx, ty) || 1
+        tx /= m; ty /= m
+        const w = maxW * bodyWidth(pts[i][2])
+        left.push([pts[i][0] - ty * w, pts[i][1] + tx * w])
+        right.push([pts[i][0] + ty * w, pts[i][1] - tx * w])
+      }
+
+      const bodyPath = () => {
+        ctx!.beginPath()
+        ctx!.moveTo(left[0][0], left[0][1])
+        for (let i = 1; i < N; i++) ctx!.lineTo(left[i][0], left[i][1])
+        for (let i = N - 1; i >= 0; i--) ctx!.lineTo(right[i][0], right[i][1])
+        ctx!.closePath()
+      }
+
+      // Sample a point on the body given position-along-spine and lateral offset
+      const at = (s: number, lat: number) => {
+        const q = pts[Math.min(N - 1, Math.max(0, Math.round(s * (N - 1))))]
+        const w = maxW * bodyWidth(Math.min(1, Math.max(0, s)))
+        return [q[0] - Math.sin(k.h) * lat * w, q[1] + Math.cos(k.h) * lat * w]
+      }
+
+      ctx!.save()
+
+      // Cast shadow on the pond floor — the single strongest depth cue. Deep koi
+      // throw a wide soft shadow far below them, surfaced koi a tight dark one.
+      const shOff = (1 - k.z) * 26 + 5
+      ctx!.save()
+      ctx!.globalAlpha = (0.035 + k.z * 0.085)
+      if (!isMobile) ctx!.filter = `blur(${(5 + (1 - k.z) * 8).toFixed(1)}px)`
+      ctx!.fillStyle = '#0b1020'
+      ctx!.translate(shOff * 0.5, shOff)
+      bodyPath()
+      ctx!.fill()
+      ctx!.restore()
+
+      ctx!.globalAlpha = 0.30 + k.z * 0.48
+      // Deep koi sit out of focus; blur is desktop-only to keep phones smooth
+      if (!isMobile && k.z < 0.75) ctx!.filter = `blur(${((0.75 - k.z) * 3.4).toFixed(2)}px)`
+
+      const tail = pts[N - 1]
+      const prev = pts[N - 3]
+      const ta = Math.atan2(tail[1] - prev[1], tail[0] - prev[0])
+      const tl = L * 0.4
+      const swing = Math.sin(k.phase - 3.4) * 0.5
+
+      ctx!.fillStyle = k.fin
+
+      // Caudal fin — two big trailing lobes, forked at the centre and lagging
+      // behind the tail beat so the whole fin trails the body like fabric
+      for (const dir of [1, -1]) {
+        const spread = dir * 0.46 + swing * 0.4
+        const tipX = tail[0] + Math.cos(ta + spread) * tl
+        const tipY = tail[1] + Math.sin(ta + spread) * tl
+        // Fork: the inner edge returns only part-way, leaving a notch
+        const notchX = tail[0] + Math.cos(ta + swing * 0.3) * tl * 0.5
+        const notchY = tail[1] + Math.sin(ta + swing * 0.3) * tl * 0.5
+        ctx!.beginPath()
+        ctx!.moveTo(tail[0], tail[1])
+        ctx!.quadraticCurveTo(
+          tail[0] + Math.cos(ta + dir * 0.9) * tl * 0.5,
+          tail[1] + Math.sin(ta + dir * 0.9) * tl * 0.5,
+          tipX, tipY,
+        )
+        ctx!.quadraticCurveTo(
+          (tipX + notchX) * 0.5 + Math.cos(ta) * tl * 0.1,
+          (tipY + notchY) * 0.5 + Math.sin(ta) * tl * 0.1,
+          notchX, notchY,
+        )
+        ctx!.closePath()
+        ctx!.fill()
+      }
+
+      // Pectoral fins — sculling just behind the gills, out of phase left/right
+      const flap = Math.sin(k.phase * 0.9) * 0.3
+      for (const dir of [1, -1]) {
+        const base = at(0.26, dir * 0.85)
+        ctx!.save()
+        ctx!.translate(base[0], base[1])
+        ctx!.rotate(k.h + Math.PI - dir * (0.7 + flap))
+        ctx!.beginPath()
+        ctx!.moveTo(0, 0)
+        ctx!.quadraticCurveTo(L * 0.1, dir * L * 0.055, L * 0.19, dir * L * 0.02)
+        ctx!.quadraticCurveTo(L * 0.1, -dir * L * 0.01, 0, 0)
+        ctx!.fill()
+        ctx!.restore()
+      }
+
+      // Pelvic fins — smaller pair further back
+      for (const dir of [1, -1]) {
+        const base = at(0.58, dir * 0.8)
+        ctx!.save()
+        ctx!.translate(base[0], base[1])
+        ctx!.rotate(k.h + Math.PI - dir * (0.6 - flap * 0.5))
+        ctx!.beginPath()
+        ctx!.ellipse(L * 0.055, 0, L * 0.07, L * 0.026, 0, 0, TAU)
+        ctx!.fill()
+        ctx!.restore()
+      }
+
+      // Dorsal fin — from above it reads as a translucent ridge running the spine
+      ctx!.beginPath()
+      const d0 = at(0.3, 0)
+      ctx!.moveTo(d0[0], d0[1])
+      for (let s = 0.3; s <= 0.68; s += 0.05) {
+        const e = at(s, Math.sin((s - 0.3) / 0.38 * Math.PI) * 0.34)
+        ctx!.lineTo(e[0], e[1])
+      }
+      for (let s = 0.68; s >= 0.3; s -= 0.05) {
+        const e = at(s, -Math.sin((s - 0.3) / 0.38 * Math.PI) * 0.34)
+        ctx!.lineTo(e[0], e[1])
+      }
+      ctx!.closePath()
+      ctx!.fill()
+
+      // Body
+      ctx!.fillStyle = k.body
+      bodyPath()
+      ctx!.fill()
+
+      // Markings, clipped so they never bleed past the silhouette
+      ctx!.save()
+      bodyPath()
+      ctx!.clip()
+      ctx!.fillStyle = k.patch
+      for (const p of k.patches) {
+        for (const b of p.blobs) {
+          const c = at(p.s + b.ds, p.lat + b.dlat)
+          const rr = L * p.r * b.r
+          ctx!.beginPath()
+          ctx!.ellipse(c[0], c[1], rr, rr * 0.78, k.h, 0, TAU)
+          ctx!.fill()
+        }
+      }
+
+      // Flank shading — the body is a cylinder, so the edges fall away into
+      // shadow while the spine stays lit. Still clipped to the silhouette.
+      const g = ctx!.createLinearGradient(
+        ...(at(0.4, -1.1) as [number, number]),
+        ...(at(0.4, 1.1) as [number, number]),
+      )
+      g.addColorStop(0, 'rgba(28,36,58,0.18)')
+      g.addColorStop(0.42, 'rgba(28,36,58,0)')
+      g.addColorStop(0.58, 'rgba(28,36,58,0)')
+      g.addColorStop(1, 'rgba(28,36,58,0.18)')
+      ctx!.fillStyle = g
+      ctx!.fillRect(k.x - L * 1.3, k.y - L * 1.3, L * 2.6, L * 2.6)
+      ctx!.restore()
+
+      // Gill plate — a soft crease behind the head
+      if (k.z > 0.45) {
+        const ga = at(0.2, -0.95)
+        const gb = at(0.14, 0)
+        const gc = at(0.2, 0.95)
+        ctx!.strokeStyle = 'rgba(20,26,45,0.22)'
+        ctx!.lineWidth = Math.max(0.5, L * 0.008)
+        ctx!.beginPath()
+        ctx!.moveTo(ga[0], ga[1])
+        ctx!.quadraticCurveTo(gb[0], gb[1], gc[0], gc[1])
+        ctx!.stroke()
+
+        // Barbels — the two whiskers at the mouth, projecting past the nose and
+        // sweeping back. Measured off the nose directly: at() collapses to zero
+        // width there, so it can't place anything forward of the head.
+        const nose = pts[0]
+        const fx = Math.cos(k.h)
+        const fy = Math.sin(k.h)
+        const sx = -Math.sin(k.h)
+        const sy = Math.cos(k.h)
+        ctx!.lineWidth = Math.max(0.4, L * 0.006)
+        ctx!.strokeStyle = 'rgba(20,26,45,0.3)'
+        for (const dir of [1, -1]) {
+          ctx!.beginPath()
+          ctx!.moveTo(nose[0] + sx * dir * maxW * 0.3, nose[1] + sy * dir * maxW * 0.3)
+          ctx!.quadraticCurveTo(
+            nose[0] + fx * L * 0.05 + sx * dir * maxW * 0.95,
+            nose[1] + fy * L * 0.05 + sy * dir * maxW * 0.95,
+            nose[0] - fx * L * 0.02 + sx * dir * maxW * 1.35,
+            nose[1] - fy * L * 0.02 + sy * dir * maxW * 1.35,
+          )
+          ctx!.stroke()
+        }
+      }
+
+      // Eyes — set wide on the head, only legible once near the surface
+      if (k.z > 0.5) {
+        ctx!.fillStyle = 'rgba(12,16,30,0.72)'
+        for (const dir of [1, -1]) {
+          const e = at(0.1, dir * 0.72)
+          ctx!.beginPath()
+          ctx!.arc(e[0], e[1], Math.max(0.9, L * 0.018), 0, TAU)
+          ctx!.fill()
+        }
+      }
+      ctx!.restore()
+    }
+
+    // One clean hairline ring. A ripple decelerates as it spreads, so the radius
+    // eases out while the stroke thins and fades — no hard pop at either end.
+    function drawRipple(r: Ripple) {
+      if (r.age < 0) return
+      const p = Math.min(1, r.age / r.life)
+      const rad = r.r0 + r.max * (1 - Math.pow(1 - p, 2.6))
+      const a = Math.pow(1 - p, 1.7) * 0.32
+      if (a < 0.004) return
+      ctx!.strokeStyle = `rgba(24,32,56,${a.toFixed(3)})`
+      ctx!.lineWidth = Math.max(0.35, r.w * (1 - p * 0.65))
+      ctx!.beginPath()
+      ctx!.arc(r.x, r.y, rad, 0, TAU)
+      ctx!.stroke()
+    }
+
+    // Bubbles kicked loose by the tap — they drift up, expand slightly, and go
+    function drawBubble(b: Bubble) {
+      const p = b.age / b.life
+      const a = Math.pow(1 - p, 1.4) * 0.34
+      if (a < 0.004) return
+      ctx!.strokeStyle = `rgba(24,32,56,${a.toFixed(3)})`
+      ctx!.lineWidth = 0.9
+      ctx!.beginPath()
+      ctx!.arc(b.x, b.y, b.r * (1 + p * 0.4), 0, TAU)
+      ctx!.stroke()
+    }
+
+    function render() {
+      ctx!.clearRect(0, 0, W, H)
+      for (const r of ripples) drawRipple(r)
+      // Far fish first so surfaced koi overlap them correctly
+      for (const k of [...koi].sort((a, b) => a.z - b.z)) drawKoi(k)
+      for (const b of bubbles) drawBubble(b)
+    }
+
+    function step(dt: number, t: number) {
+      for (const k of koi) {
+        // Lazy wander — two detuned sines so the path never repeats cleanly
+        k.h += Math.sin(t * 0.31 + k.seed) * 0.010 + Math.sin(t * 0.13 + k.seed * 2.1) * 0.006
+
+        // Bank away from the cursor, harder the closer it gets
+        const dx = k.x - pointerX
+        const dy = k.y - pointerY
+        const d = Math.hypot(dx, dy)
+        if (d < 190) {
+          const away = Math.atan2(dy, dx)
+          k.h += wrapAngle(away - k.h) * 0.07 * (1 - d / 190)
+          k.startle = Math.max(k.startle, (1 - d / 190) * 0.6)
+        }
+
+        // Soft walls — turn back toward centre before swimming off-screen
+        const m = 90
+        if (k.x < m || k.x > W - m || k.y < m || k.y > H - m) {
+          const toCentre = Math.atan2(H / 2 - k.y, W / 2 - k.x)
+          k.h += wrapAngle(toCentre - k.h) * 0.02
+        }
+
+        k.startle *= 0.97
+        const v = k.speed * (1 + k.startle * 2.2)
+        k.x += Math.cos(k.h) * v * dt
+        k.y += Math.sin(k.h) * v * dt
+        k.phase += (k.waveSpeed + k.startle * 6) * dt
+
+        // Drift between depths, picking a new target once the current one is reached
+        k.z += (k.zTarget - k.z) * 0.25 * dt
+        if (Math.abs(k.z - k.zTarget) < 0.03) k.zTarget = rand(0.15, 1)
+
+        // Surfaced koi dimple the water as they pass
+        if (k.z > 0.8 && Math.random() < dt * 0.35 && ripples.length < 20) {
+          ripples.push({ x: k.x, y: k.y, r0: 2, max: 34 + Math.random() * 26, age: 0, life: 2.6, w: 0.9 })
+        }
+      }
+
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        ripples[i].age += dt
+        if (ripples[i].age >= ripples[i].life) ripples.splice(i, 1)
+      }
+
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i]
+        b.age += dt
+        b.x += b.vx * dt
+        b.y += b.vy * dt
+        b.vy -= 26 * dt          // buoyancy — bubbles accelerate upward
+        b.vx *= 1 - 1.4 * dt     // and lose their outward kick to drag
+        if (b.age >= b.life) bubbles.splice(i, 1)
+      }
+    }
+
+    // Reduced motion: one still frame, no loop, no listeners beyond resize
+    if (reduceMotion) {
+      const onResizeStatic = () => { resize(); render() }
+      window.addEventListener('resize', onResizeStatic)
+      render()
+      return () => window.removeEventListener('resize', onResizeStatic)
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      pointerX = e.clientX
+      pointerY = e.clientY
+    }
+    function onPointerLeave() {
+      pointerX = -9999
+      pointerY = -9999
+    }
+    // Click anywhere: three staggered rings spreading from the impact point, a
+    // small burst of bubbles, and every koi nearby bolts.
+    function onPointerDown(e: PointerEvent) {
+      if (ripples.length > 26) return
+      const x = e.clientX
+      const y = e.clientY
+      ripples.push({ x, y, r0: 3, max: 168, age: 0,     life: 2.4, w: 1.5 })
+      ripples.push({ x, y, r0: 2, max: 118, age: -0.14, life: 2.1, w: 1.1 })
+      ripples.push({ x, y, r0: 1, max: 74,  age: -0.28, life: 1.8, w: 0.8 })
+      const n = isMobile ? 4 : 7
+      for (let i = 0; i < n; i++) {
+        const a = rand(0, TAU)
+        const sp = rand(14, 46)
+        bubbles.push({
+          x: x + Math.cos(a) * rand(1, 9),
+          y: y + Math.sin(a) * rand(1, 9),
+          r: rand(1.4, 4.2),
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp * 0.5 - rand(6, 20),
+          age: 0,
+          life: rand(0.9, 1.7),
+        })
+      }
+      for (const k of koi) {
+        const d = Math.hypot(k.x - e.clientX, k.y - e.clientY)
+        if (d < 280) {
+          k.h += wrapAngle(Math.atan2(k.y - e.clientY, k.x - e.clientX) - k.h) * 0.55
+          k.startle = Math.min(1, k.startle + (1 - d / 280))
+        }
+      }
+    }
+
+    window.addEventListener('resize', resize)
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    window.addEventListener('pointerdown', onPointerDown, { passive: true })
+    window.addEventListener('pointerleave', onPointerLeave)
+
+    let animId = 0
+    let paused = false
+    let last = performance.now()
+    const minFrameMs = 1000 / 30   // koi drift slowly — 30fps looks identical and costs half
+
+    function frame(now: number) {
+      animId = requestAnimationFrame(frame)
+      const elapsed = now - last
+      if (elapsed < minFrameMs) return
+      last = now
+      const dt = Math.min(elapsed / 1000, 0.06)   // clamp so tab-switches don't teleport the shoal
+      step(dt, now / 1000)
+      render()
+    }
+    animId = requestAnimationFrame(frame)
+
+    function onVisibility() {
+      if (document.hidden) {
+        if (!paused) { cancelAnimationFrame(animId); paused = true }
+      } else if (paused) {
+        paused = false
+        last = performance.now()
+        animId = requestAnimationFrame(frame)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('pointerleave', onPointerLeave)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="fixed inset-0 pointer-events-none z-0"
+      style={{ mixBlendMode: 'multiply' }}
+    />
+  )
+}
+
 /* ── Profile Photo ───────────────────────────────────── */
 function ProfilePhoto() {
   return (
@@ -556,6 +1101,8 @@ export default function Design5() {
       <PaperFlowBackground />
       {/* Cream wash — mutes the water shader into a quiet paper texture so dark text stays readable everywhere */}
       <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'rgba(244,237,224,0.55)' }} />
+      {/* Koi swim above the wash so they stay legible — multiply blending keeps them ink-on-paper */}
+      <KoiPond />
 
       <div className={`relative z-10 max-w-4xl mx-auto px-5 sm:px-8 py-12 sm:py-16 transition-all duration-700 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
 
