@@ -7,3 +7,20 @@
   margin: 0;
   padding: 0;
 }
+
+html {
+  /* Dark UA defaults: scrollbars, form controls, and the iOS rubber-band area
+     all follow this. Without it the overscroll gutter flashes white. */
+  color-scheme: dark;
+  background: #000;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* The page has its own full-bleed canvases; no horizontal scroll should ever
+     be reachable on a phone. */
+  overflow-x: hidden;
+}
