@@ -58,6 +58,16 @@ const GOLD   = '#e0b357'
 
 const hackathonProjects: Project[] = [
   {
+    meta: 'MUBA 2026 · Malaysia 🇲🇾',
+    name: 'ThetaDuel',
+    icon: '⚔️',
+    desc: 'Options trading is a wall of greeks that scares off everyone who isn\'t already a quant. ThetaDuel turns it into a 1v1 duel: draw a box on a live price chart and the box *is* the option — its dimensions are the strikes, and the premium is quoted straight off the Thetanuts book rather than invented by us. Two players draw blind against the same asset, then both boxes reveal on one chart and whoever\'s lands at expiry takes the pool. Every match is fully determined by (lobby, seed), so a link replays exactly what its sender saw.',
+    tech: ['Bun', 'React', 'Solidity', 'Thetanuts SDK'],
+    github: 'https://github.com/POTATO0826/MUBA',
+    accent: GOLD,
+    award: '🥈 1st Runner-Up · Thetanuts AI Track',
+  },
+  {
     meta: 'DevLeague 2026 · TalentLabs · Malaysia 🇲🇾',
     name: 'ChadBuddy',
     icon: '📉',
