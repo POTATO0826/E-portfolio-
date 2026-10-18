@@ -2,6 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ─────────────────────────────────────
+   Adapted from https://github.com/AdityaKodez/adityaojha (MIT) — his
+   `app/globals.css`. He ships a light palette with a `.dark` override; this
+   site is unconditionally dark, so his `.dark` values are folded straight into
+   `:root` and the variant is dropped entirely.
+
+   Colours that need Tailwind opacity modifiers (`bg-muted/20`) are stored as
+   bare oklch channels, because Tailwind cannot inject an alpha channel into a
+   complete `oklch(...)` string. tailwind.config.js reassembles them with
+   `<alpha-value>`. Anything read only through `var()` stays a literal.        */
+:root {
+  /* Pure black rather than his oklch(0.145 0 0) — the Starfield canvas sits
+     behind the whole page and a lifted background washes the stars out. */
+  --background: 0 0 0;
+  --foreground: 0.985 0 0;
+  --card: 0.205 0 0;
+  --card-foreground: 0.985 0 0;
+  --popover: 0.205 0 0;
+  --popover-foreground: 0.985 0 0;
+  --muted: 0.269 0 0;
+  --muted-foreground: 0.708 0 0;
+
+  --ring: 0.556 0 0;
+
+  /* Already translucent, so it gets no <alpha-value> slot. This is the same
+     white/10 the page has been drawing its hairlines with all along. */
+  --border: oklch(1 0 0 / 10%);
+
+  --radius: 0.45rem;
+
+  /* Motion tokens. --motion-ease-standard is the same curve as the --ease-out
+     already defined in Design5's style block; keeping both names means ported
+     components and existing ones share one feel instead of competing. */
+  --motion-duration-fast: 180ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 280ms;
+  --motion-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Contribution heatmap. His ramp is blue-violet; this one climbs to SAGE
+     (#9db884) so the graph belongs to the same palette as the project accents. */
+  --heatmap-level-0: oklch(0.26 0 0);
+  --heatmap-level-1: oklch(0.40 0.035 130);
+  --heatmap-level-2: oklch(0.53 0.060 130);
+  --heatmap-level-3: oklch(0.65 0.080 130);
+  --heatmap-level-4: oklch(0.78 0.105 130);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,4 +71,96 @@ body {
   /* The page has its own full-bleed canvases; no horizontal scroll should ever
      be reachable on a phone. */
   overflow-x: hidden;
+}
+
+@layer components {
+  /* Section headings as banded rules rather than bare text — his signature
+     structural move. */
+  .section-heading {
+    @apply border-y border-dashed bg-muted/20;
+  }
+
+  /* Generalised transitions driven by the motion tokens, replacing per-element
+     transition declarations. */
+  .micro-transition {
+    transition-property: transform, background-color, border-color, color, opacity, box-shadow;
+    transition-duration: var(--motion-duration-base);
+    transition-timing-function: var(--motion-ease-standard);
+  }
+
+  .micro-transition-slow {
+    transition-property: transform, background-color, border-color, color, opacity, box-shadow;
+    transition-duration: var(--motion-duration-slow);
+    transition-timing-function: var(--motion-ease-smooth);
+  }
+
+  .micro-press {
+    transition-property: transform;
+    transition-duration: var(--motion-duration-fast);
+    transition-timing-function: var(--motion-ease-standard);
+  }
+
+  .micro-press:active {
+    transform: scale(0.992);
+  }
+
+  /* ── Note paper ────────────────────────────────────────
+     The projects ledger. Warm near-black stock with a grain (an SVG
+     feTurbulence tile, inline so there is no request), ruled lines every
+     2rem running the full height of the sheet, a slight tilt and a soft lift
+     off the page. The grain is a static background — nothing here animates. */
+  /* Black and plain by request: neutral near-black stock, a faint neutral
+     grain, grey rules. No warm tint, no colour anywhere on the sheet. */
+  .paper {
+    background-color: #0b0b0c;
+    background-image:
+      repeating-linear-gradient(to bottom, transparent 0 calc(2rem - 1px), rgba(255, 255, 255, 0.035) calc(2rem - 1px) 2rem),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.045 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    background-size: auto, 160px 160px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 30px 60px -36px rgba(0, 0, 0, 0.9);
+    transform: rotate(-0.35deg);
+  }
+
+  /* The notebook margin, in grey rather than the classic red. */
+  .margin-rule {
+    border-right: 2px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .punch {
+    background: #000;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 1px 2px rgba(0, 0, 0, 0.9);
+  }
+
+  .tape {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Tailwind v4 `@utility no-scrollbar` upstream; a plain class here. Used by
+     the heatmap's horizontal scroll container. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* lib/motion.ts deliberately ships no reduced-motion hook — it relies on this
+   rule instead, which pins the resolved state with !important and so beats
+   Motion's inline styles. */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

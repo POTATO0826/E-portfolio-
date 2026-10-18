@@ -142,3 +142,5 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+# Raw sticker renders (10MB of PNG). The processed WebPs in public/stickers/ are what ships.
+Sticker Packs/

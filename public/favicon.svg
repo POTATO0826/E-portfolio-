@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 45" id="Layer_45" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" style="width: 200px; height: 200px; transform-origin: 50% 50%; transform: scaleX(1) scaleY(1) rotate(0deg);"><title/><polygon points="15.643 18.357 14.229 16.943 19.186 12 14.279 7.107 15.693 5.693 22 12 15.643 18.357" style="fill:#167C2B;stroke:none" fill="#167C2B" stroke="none"/><polygon points="8.357 18.357 9.771 16.943 4.814 12 9.721 7.107 8.307 5.693 2 12 8.357 18.357" style="fill:#167C2B;stroke:none" fill="#167C2B" stroke="none"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Coffee cup, same paper-cut palette as the desk stickers: sage body,
+       cream outline, steam. Shapes are kept chunky so it survives 16px. -->
+  <path d="M14 26 H42 V44 Q42 54 32 54 H24 Q14 54 14 44 Z" fill="#9db884" stroke="#f3eee4" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M42 31 H48 Q56 31 56 39 Q56 47 48 47 H42" fill="none" stroke="#f3eee4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M10 58 H46" stroke="#f3eee4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M23 20 Q20 15 23 10 Q26 5 23 1" fill="none" stroke="#f3eee4" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M33 20 Q30 15 33 10 Q36 5 33 1" fill="none" stroke="#f3eee4" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

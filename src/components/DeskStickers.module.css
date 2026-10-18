@@ -1,0 +1,114 @@
+/* X-style profile header: the stickers are scattered across a wide banner,
+   and the photo hangs off the banner's bottom-left edge, half in, half out.
+   Percentage placement + aspect-ratio so the banner scales as one picture.
+   Mechanism adapted from AdityaKodez/adityaojha profile-banner.module.css
+   (MIT); the artwork is this site's own. */
+
+.composition {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2.1;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.sticker,
+.profile {
+  perspective: 650px;
+}
+
+.sticker {
+  position: absolute;
+  z-index: 2;
+}
+
+.sticker:hover,
+.sticker:focus-within {
+  z-index: 10;
+}
+
+/* Photo: anchored to the banner's bottom-left corner and pushed half-way out
+   of it, with a page-coloured ring so it cuts cleanly over the banner edge. */
+.profile {
+  position: absolute;
+  left: 1.25rem;
+  bottom: 0;
+  z-index: 3;
+  translate: 0 46%;
+}
+
+.profile :global(.pfp-frame) {
+  outline: 4px solid #000;
+}
+
+.button {
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.55));
+  transition: filter 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover: the sticker lifts further off the page and picks up a soft cream
+   halo, as if a light moved over it. Motion handles the scale and tilt; this
+   is the only paint-side effect, on a small element, gated to real pointers.
+   The idle bob pauses so it doesn't fight the pointer tilt.               */
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    filter:
+      drop-shadow(0 18px 22px rgba(0, 0, 0, 0.7))
+      drop-shadow(0 0 16px rgba(243, 238, 228, 0.28));
+  }
+  .sticker:hover .bob,
+  .profile:hover .bob {
+    animation-play-state: paused;
+  }
+}
+
+/* Idle bob — a slow, slightly different float per sticker so the group never
+   moves in lockstep. Lives on a wrapper, not the button, because Motion owns
+   the button's transform for the pointer tilt. transform only.             */
+.bob {
+  animation: bob 5.2s ease-in-out infinite;
+  animation-delay: var(--bob-delay, 0s);
+  animation-duration: var(--bob-dur, 5.2s);
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%      { transform: translate3d(0, -6px, 0) rotate(var(--bob-rot, 0deg)); }
+}
+
+/* Left to right across the banner. The left third stays lighter so the photo
+   hanging off the corner below has clear air above it. Aspect ratios are the
+   trimmed images' own, so the boxes fit the art. */
+.tickets  { top: 10%;   left: 3%;   width: 26%; aspect-ratio: 1.773; --bob-dur: 5.2s; --bob-delay: 0.4s; --bob-rot: 1.4deg; }
+.keyboard { top: 6%;    left: 30%;  width: 30%; aspect-ratio: 1.434; --bob-dur: 5.6s; --bob-delay: 0s;   --bob-rot: -1.2deg; }
+.camera   { bottom: 4%; left: 50%;  width: 26%; aspect-ratio: 1.382; --bob-dur: 6.2s; --bob-delay: 1.7s; --bob-rot: -1.8deg; }
+.backpack { top: 8%;    right: 3%;  width: 20%; aspect-ratio: 1.093; --bob-dur: 4.8s; --bob-delay: 0.9s; --bob-rot: 1.6deg; }
+
+@media (min-width: 640px) {
+  .composition {
+    aspect-ratio: 3;
+  }
+  .profile {
+    left: 2rem;
+  }
+  .tickets  { top: 14%; left: 4%;  width: 22%; }
+  .keyboard { top: 8%;  left: 29%; width: 28%; }
+  .camera   { bottom: 6%; left: 55%; width: 22%; }
+  .backpack { top: 10%; right: 4%; width: 17%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker,
+  .button {
+    transform: none !important;
+  }
+  .bob {
+    animation: none;
+  }
+}
