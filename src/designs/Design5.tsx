@@ -460,17 +460,19 @@ export default function Design5() {
         {/* X-style profile header: a full-width banner (the sticker collage)
             with the photo hanging off its bottom-left corner, then name,
             handle and bio left-aligned beneath. */}
-        <header className="pb-12 border-b border-dashed border-white/10">
+        <header className="flex flex-col pb-12 border-b border-dashed border-white/10">
           <div className="hero-in hero-b1">
             <DeskStickers>
               <ProfilePhoto />
             </DeskStickers>
           </div>
 
-          {/* Contact as icons only, right-aligned under the banner where X puts
-              its action buttons. The row's min-height is what clears the photo
-              overhanging the banner on the left. */}
-          <div className="hero-in hero-b1 ml-[7.5rem] flex min-h-[4.75rem] flex-wrap items-start justify-end gap-1.5 pt-3 sm:ml-0 sm:min-h-[5.75rem] sm:gap-2">
+          {/* Contact as icons only. From sm up they sit right-aligned under the
+              banner where X puts its action buttons, and the row's min-height is
+              what clears the photo overhanging the banner on the left. On phones
+              that strip is too narrow to share, so the row drops below the bio
+              (order-3) and the text block clears the photo itself. */}
+          <div className="hero-in hero-b4 order-3 flex flex-wrap items-center gap-2 pt-7 sm:order-none sm:min-h-[5.75rem] sm:items-start sm:justify-end sm:pt-3">
             {contacts.map(c => (
               <a
                 key={c.label}
@@ -479,14 +481,14 @@ export default function Design5() {
                 rel="noreferrer"
                 aria-label={`${c.label}: ${c.val}`}
                 title={c.label}
-                className="contact-icon micro-transition grid size-9 place-items-center rounded-full border border-dashed border-white/15 sm:size-10"
+                className="contact-icon micro-transition grid size-10 place-items-center rounded-full border border-dashed border-white/15"
               >
                 <img src={c.icon} alt="" width={18} height={18} loading="lazy" className="size-[18px] object-contain" />
               </a>
             ))}
           </div>
 
-          <div className="pl-1">
+          <div className="order-2 pt-16 pl-1 sm:order-none sm:pt-0">
             <h1 className="hero-in hero-b2 display-serif text-5xl sm:text-6xl md:text-7xl mb-2 text-zinc-50 leading-[0.95] text-balance">
               Vince <span className="display-serif-i">Loo</span>
             </h1>
