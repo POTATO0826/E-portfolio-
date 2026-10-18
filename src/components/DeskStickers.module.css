@@ -29,11 +29,12 @@
   z-index: 10;
 }
 
-/* Photo: anchored to the banner's bottom-left corner and pushed half-way out
+/* Photo: on the column's left edge, so it lines up with the name beneath it,
+   anchored to the banner's bottom and pushed half-way out
    of it, with a page-coloured ring so it cuts cleanly over the banner edge. */
 .profile {
   position: absolute;
-  left: 1.25rem;
+  left: 0;
   bottom: 0;
   z-index: 3;
   translate: 0 46%;
@@ -85,22 +86,19 @@
 /* Left to right across the banner. The left third stays lighter so the photo
    hanging off the corner below has clear air above it. Aspect ratios are the
    trimmed images' own, so the boxes fit the art. */
-.tickets  { top: 10%;   left: 3%;   width: 26%; aspect-ratio: 1.773; --bob-dur: 5.2s; --bob-delay: 0.4s; --bob-rot: 1.4deg; }
-.keyboard { top: 6%;    left: 30%;  width: 30%; aspect-ratio: 1.434; --bob-dur: 5.6s; --bob-delay: 0s;   --bob-rot: -1.2deg; }
-.camera   { bottom: 4%; left: 50%;  width: 26%; aspect-ratio: 1.382; --bob-dur: 6.2s; --bob-delay: 1.7s; --bob-rot: -1.8deg; }
-.backpack { top: 8%;    right: 3%;  width: 20%; aspect-ratio: 1.093; --bob-dur: 4.8s; --bob-delay: 0.9s; --bob-rot: 1.6deg; }
+.tickets  { top: 8%;    left: 3%;   width: 26%; aspect-ratio: 1.773; --bob-dur: 5.2s; --bob-delay: 0.4s; --bob-rot: 1.4deg; }
+.keyboard { top: 24%;   left: 31%;  width: 30%; aspect-ratio: 1.434; --bob-dur: 5.6s; --bob-delay: 0s;   --bob-rot: -1.2deg; }
+.camera   { bottom: 6%; left: 62%;  width: 24%; aspect-ratio: 1.382; --bob-dur: 6.2s; --bob-delay: 1.7s; --bob-rot: -1.8deg; }
+.backpack { top: 6%;    right: 3%;  width: 19%; aspect-ratio: 1.093; --bob-dur: 4.8s; --bob-delay: 0.9s; --bob-rot: 1.6deg; }
 
 @media (min-width: 640px) {
   .composition {
     aspect-ratio: 3;
   }
-  .profile {
-    left: 2rem;
-  }
-  .tickets  { top: 14%; left: 4%;  width: 22%; }
-  .keyboard { top: 8%;  left: 29%; width: 28%; }
-  .camera   { bottom: 6%; left: 55%; width: 22%; }
-  .backpack { top: 10%; right: 4%; width: 17%; }
+  .tickets  { top: 10%; left: 4%;  width: 20%; }
+  .keyboard { top: 18%; left: 27%; width: 28%; }
+  .camera   { bottom: 7%; left: 58%; width: 21%; }
+  .backpack { top: 8%;  right: 4%; width: 16%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

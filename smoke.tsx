@@ -32,7 +32,7 @@ check('profile photo inside the collage', html.indexOf('A few things from my des
 check('hero is the status/name/tagline stack', !html.includes('Available for opportunities') && html.includes('caffeinated') && html.includes('🌙 Night Owl'))
 
 // --- Heatmap (SSR = skeleton)
-check('heatmap skeleton renders 53 columns', count(html, 'w-3 h-3 rounded-sm bg-muted') === 53 * 7, `found ${count(html, 'w-3 h-3 rounded-sm bg-muted')}`)
+check('heatmap skeleton renders 53 columns', count(html, 'class="bg-muted" style="width:12px;height:12px') === 53 * 7, `found ${count(html, 'class="bg-muted" style="width:12px;height:12px')}`)
 
 // --- Ask AI was removed
 check('no ask-ai box', !html.includes('ask-ai-input'))

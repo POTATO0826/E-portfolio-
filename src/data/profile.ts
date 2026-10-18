@@ -6,7 +6,10 @@ export const profile = {
   name: 'Vince Loo',
   handle: 'POTATO0826',
   headline: 'A Tech Guy who is caffeinated.',
-  location: 'Malaysia 🇲🇾',
+  location: 'Malaysia',
+  // The flag is an image, not the 🇲🇾 emoji: Windows ships no colour flag
+  // glyphs, so the emoji renders there as the bare letters "MY".
+  flag: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f1f2-1f1fe.svg',
   university: "Taylor's University",
 }
 

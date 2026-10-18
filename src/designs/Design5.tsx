@@ -273,9 +273,9 @@ function SectionHeader({ title, count, id }: { title: string; count: string; id?
       id={id}
       className="reveal section-heading flex items-baseline gap-4 mt-16 mb-2 -mx-5 px-5 py-2 scroll-mt-6"
     >
-      <h2 className="display-serif-i text-3xl sm:text-4xl text-zinc-100 leading-none text-balance">{title}</h2>
+      <h2 className="display-serif-i min-w-0 text-3xl sm:text-4xl text-zinc-100 leading-none text-balance">{title}</h2>
       <div className="flex-1" />
-      <span className="text-xs font-mono tabular-nums text-zinc-500 tracking-widest">{count}</span>
+      <span className="shrink-0 whitespace-nowrap text-xs font-mono tabular-nums text-zinc-500 tracking-widest">{count}</span>
     </div>
   )
 }
@@ -488,12 +488,12 @@ export default function Design5() {
             ))}
           </div>
 
-          <div className="order-2 pt-16 pl-1 sm:order-none sm:pt-0">
+          <div className="order-2 pt-16 sm:order-none sm:pt-0">
             <h1 className="hero-in hero-b2 display-serif text-5xl sm:text-6xl md:text-7xl mb-2 text-zinc-50 leading-[0.95] text-balance">
               Vince <span className="display-serif-i">Loo</span>
             </h1>
             <p className="hero-in hero-b2 font-mono text-xs text-zinc-500 mb-4">
-              @{profile.handle} <span className="mx-1.5 text-zinc-700">·</span> {profile.location}
+              @{profile.handle} <span className="mx-1.5 text-zinc-700">·</span> {profile.location}{" "}<img src={profile.flag} alt="" aria-hidden="true" width={14} height={14} loading="lazy" className="inline-block size-3.5 align-[-2px]" />
             </p>
             <p className="hero-in hero-b3 text-zinc-300 text-base sm:text-lg max-w-xl leading-relaxed mb-6 text-pretty">
               {profile.headline}
